@@ -84,19 +84,25 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/blogs/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/contact/**").permitAll()
-                .requestMatchers("/api/ai/**").permitAll()
-                .requestMatchers("/error").permitAll()
-                .anyRequest().authenticated()
-            );
-
+            // Public authentication APIs
+            .requestMatchers("/api/auth/**").permitAll()
+            // Public product APIs
+            .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/blogs/**").permitAll()
+            // Public contact and AI APIs
+            .requestMatchers(HttpMethod.POST, "/api/contact/**").permitAll()
+            .requestMatchers("/api/ai/**").permitAll()
+            // Public health check
+            .requestMatchers("/actuator/health").permitAll()
+            // Error endpoint
+            .requestMatchers("/error").permitAll()
+            .requestMatchers("/", "/actuator/health", "/error").permitAll()
+            // All remaining APIs require authentication
+            .anyRequest().authenticated()
+        );
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }
